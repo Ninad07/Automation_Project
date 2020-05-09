@@ -1,0 +1,8 @@
+if sudo docker ps | grep prod_os
+then
+echo "Prod Server already running"
+else
+sudo docker run -dit -p 8081:80 -v /prod_dir:/usr/local/apache2/htdocs --name prod_os httpd
+fi
+
+sudo cp -rvf * /prod_dir/
