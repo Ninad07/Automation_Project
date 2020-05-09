@@ -1,0 +1,70 @@
+Pre-requisites:
+1. Jenkins
+2. Git
+3. GitHub account
+4. Linux OS (in my case, RedHat 8)
+5. Docker (installed in Linux OS)
+
+
+Before following the steps, make sure that the Jenkins user has the permissions to make changes in the Linux OS. If not, first
+change the permissions.
+
+Steps:
+
+1. First of all create a GitHub repository and initialize it.
+
+2. Open the Git bash on your desktop and clone the created repository
+   $ git clone [URL of the repository]
+
+3. Create a new branch- dev1 and switch to the created branch
+   $ git branch dev1
+   $ git checkout dev1
+ 
+4. Create a new hook
+   $ vim .git/hooks/post-commit
+   
+   Add the following lines:
+   
+   #!/bin/sh
+   git push
+   
+   Save the file
+
+5. Type the following commands:
+   
+   $ git remote add [URL of the repository]
+   $ git push -u origin dev1
+   
+   Now, as soon as you commit, the file will be automatically pushed in the GitHub repository
+
+6. In your Linux operating system, create two directories
+   $ mkdir /prod_dir
+   $ mkdir /test_dir
+   
+7. Download the *httpd* image from docker hub (You can use any other Web server image)
+   $ docker pull httpd
+
+8. Stop the firewall Daemon and SELinux Security
+   $ systemctl stop firewalld
+   $ setenforce 0
+
+9. Launch Jenkins
+
+10. Create first freestyle job- Site_testing in Jenkins
+   Configure the job as follows:
+    i] Select git option in Source Code Management and enter your repository name. Select your created new branch (dev1)
+    ii] Under the Build Triggers, apply Poll SCM trigger and add  * * * * * in the Schedule bar. This will monitor your repository
+        every minute
+    iii] Copy the code present in the Testing_code file in the Execute shell command Bar under the Build option
+    iv] Click on Apply and Save
+    
+11. Now create second freestyle job- Prod_deployment
+   Configure the job as follows:
+    i] Select git option in Source Code Management and enter your repository name. Select your created new branch (dev1)
+       and provide neccessary credentials
+    ii] In the Additional behaviour option, select 'merge before build'. Type 'origin' under 'Name of repository' option 
+        and 'master' under 'Branch to merge to' option
+    iii] Under Build triggers, select 'Build after other projects are built' and type the name of your first job (Site_testing) under
+         'projects to watch' option
+    iv] Copy the code present in the 'Production_Code' file in the Execute shell command Bar under the Build option
+    v] Click on Apply and Save
